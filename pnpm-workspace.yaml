@@ -1,0 +1,9 @@
+packages:
+  - 'apps/*'
+  - 'packages/*'
+  - 'workers/*'
+allowBuilds:
+  bcrypt: false
+  esbuild: false
+  sharp: false
+  workerd: false

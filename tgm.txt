@@ -1,0 +1,76 @@
+import { 
+    IRewardProvider, 
+    IProviderTaskConfig, 
+    IProviderSession, 
+    IProviderVerification, 
+    IObservabilityContext 
+} from '@reward-os/types';
+
+/**
+ * 📺 ADAPTER 1: Adsgram Provider Implementation
+ * Officially supports Rewarded Video / Static Ads for Telegram Mini Apps
+ */
+export class AdsgramProvider implements IRewardProvider {
+    readonly providerSlug = 'ad_adsgram';
+
+    async startTask(
+        userId: string, 
+        config: IProviderTaskConfig, 
+        ctx: IObservabilityContext
+    ): Promise<IProviderSession> {
+        // Future: Call Adsgram API to pre-fetch ad transaction token
+        const expiresAt = new Date();
+        expiresAt.setMinutes(expiresAt.getMinutes() + 10); // 10 Min Session TTL
+
+        return {
+            providerSessionId: `adsgram_${crypto.randomUUID()}`,
+            token: `ag_token_${crypto.randomUUID().substring(0, 8)}`,
+            expiresAt
+        };
+    }
+
+    async verifyTask(
+        providerSessionId: string, 
+        payload: any, 
+        ctx: IObservabilityContext
+    ): Promise<IProviderVerification> {
+        // Future: Verify callback signature sent by Adsgram servers
+        return { isSuccess: true, fraudScore: 0 };
+    }
+}
+
+/**
+ * 🔗 ADAPTER 2: AdMaven Provider Implementation (Policy-Compliant Blueprint)
+ * Standard Smartlink redirection module running under strict platform rate-limits
+ */
+export class AdMavenProvider implements IRewardProvider {
+    readonly providerSlug = 'ad_admaven';
+
+    async startTask(
+        userId: string, 
+        config: IProviderTaskConfig, 
+        ctx: IObservabilityContext
+    ): Promise<IProviderSession> {
+        const expiresAt = new Date();
+        expiresAt.setMinutes(expiresAt.getMinutes() + 5); // 5 Min Cooldown TTL
+
+        // Dynamic Link Generation matching AdMaven Tracking Requirements
+        const admavenBaseUrl = config.metadata.zoneLink || "https://admaven-smartlink-placeholder.com";
+        const redirectUrl = `${admavenBaseUrl}?effect_id=${userId}&sub_id=${ctx.correlationId}`;
+
+        return {
+            providerSessionId: `admaven_${crypto.randomUUID()}`,
+            redirectUrl,
+            expiresAt
+        };
+    }
+
+    async verifyTask(
+        providerSessionId: string, 
+        payload: any, 
+        ctx: IObservabilityContext
+    ): Promise<IProviderVerification> {
+        // Future: Server-to-Server (S2S) Postback check matching correlationId
+        return { isSuccess: true, fraudScore: 0 };
+    }
+}
