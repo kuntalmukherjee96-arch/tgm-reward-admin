@@ -1,0 +1,18 @@
+==========================================
+🏦 STARTING LEDGER INTEGRITY TESTS...
+==========================================
+
+Step 1: Inserting a valid transaction into wallet_ledger...
+✅ Insert Successful! Ledger ID: 4cf072f8-6982-43e3-a546-850ebc59454b 
+
+Step 2: Attempting to UPDATE the transaction amount to 500 (Hacking attempt)...
+✅ UPDATE BLOCKED by Database Trigger!
+🔒 RAW DB EVIDENCE: IMMUTABILITY VIOLATION: The wallet_ledger is append-only. UPDATE or DELETE operations are strictly forbidden. 
+
+Step 3: Attempting to DELETE the transaction to erase traces...
+✅ DELETE BLOCKED by Database Trigger!
+🔒 RAW DB EVIDENCE: IMMUTABILITY VIOLATION: The wallet_ledger is append-only. UPDATE or DELETE operations are strictly forbidden. 
+
+==========================================
+🏁 LEDGER INTEGRITY TESTS COMPLETED.
+==========================================

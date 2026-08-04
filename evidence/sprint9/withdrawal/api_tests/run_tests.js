@@ -1,5 +1,5 @@
 // 🚀 SUPER CODER MODE: ZERO DEPENDENCY NATIVE SCRIPT
-// No npm install required. Using native Node.js fetch() for Supabase REST API
+// Testing Ledger Immutability (Mentor Checklist Point 4)
 
 const SUPABASE_URL = 'https://ninulhvgcptsvoswhckn.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_OPNQTRG3tTQKxBlNJ1i71A_c2lc7w-g';
@@ -11,47 +11,64 @@ const headers = {
   'Prefer': 'return=representation'
 };
 
-async function runRealTests() {
+async function runLedgerTests() {
   console.log("==========================================");
-  console.log("🚀 STARTING AUTOMATED EVIDENCE TESTS (NATIVE MODE)...");
+  console.log("🏦 STARTING LEDGER INTEGRITY TESTS...");
   console.log("==========================================\n");
 
-  // TEST 1: State Machine Integrity Test
-  console.log("Test 1: Attempting to insert an INVALID status ('HACKER_STATUS') into KYC table...");
-  
   try {
-    const response1 = await fetch(`${SUPABASE_URL}/rest/v1/kyc_requests`, {
+    // 1. Insert a test transaction into the ledger
+    console.log("Step 1: Inserting a valid transaction into wallet_ledger...");
+    const insertRes = await fetch(`${SUPABASE_URL}/rest/v1/wallet_ledger`, {
       method: 'POST',
       headers: headers,
       body: JSON.stringify({
-        user_id: "test_user_1",
-        document_type: "AADHAAR",
-        document_front_url: "https://example.com/doc.jpg",
-        status: "HACKER_STATUS" // This MUST fail due to our DB constraints
+        user_id: "test_user_ledger",
+        transaction_type: "EARNING",
+        credit_amount: 100.00,
+        description: "Test earning for immutability check"
       })
     });
+    
+    const insertData = await insertRes.json();
+    const ledgerId = insertData[0]?.id;
 
-    const data1 = await response1.json();
+    if (ledgerId) {
+      console.log("✅ Insert Successful! Ledger ID:", ledgerId, "\n");
 
-    if (!response1.ok) {
-      console.log("✅ TEST 1 PASSED! Database blocked invalid state transition.");
-      console.log("🔒 RAW DB EVIDENCE:", data1.message || JSON.stringify(data1), "\n");
+      // 2. Attempt to UPDATE the transaction (MUST FAIL)
+      console.log("Step 2: Attempting to UPDATE the transaction amount to 500 (Hacking attempt)...");
+      const updateRes = await fetch(`${SUPABASE_URL}/rest/v1/wallet_ledger?id=eq.${ledgerId}`, {
+        method: 'PATCH',
+        headers: headers,
+        body: JSON.stringify({ credit_amount: 500.00 })
+      });
+      const updateData = await updateRes.json();
+
+      if (!updateRes.ok) {
+        console.log("✅ UPDATE BLOCKED by Database Trigger!");
+        console.log("🔒 RAW DB EVIDENCE:", updateData.message || JSON.stringify(updateData), "\n");
+      } else {
+        console.log("❌ CRITICAL FAILURE: System allowed ledger update!\n");
+      }
+
+      // 3. Attempt to DELETE the transaction (MUST FAIL)
+      console.log("Step 3: Attempting to DELETE the transaction to erase traces...");
+      const deleteRes = await fetch(`${SUPABASE_URL}/rest/v1/wallet_ledger?id=eq.${ledgerId}`, {
+        method: 'DELETE',
+        headers: headers
+      });
+      const deleteData = await deleteRes.json();
+
+      if (!deleteRes.ok) {
+        console.log("✅ DELETE BLOCKED by Database Trigger!");
+        console.log("🔒 RAW DB EVIDENCE:", deleteData.message || JSON.stringify(deleteData), "\n");
+      } else {
+        console.log("❌ CRITICAL FAILURE: System allowed ledger deletion!\n");
+      }
+
     } else {
-      console.log("❌ TEST 1 FAILED! System allowed invalid status.\n");
-    }
-
-    // TEST 2: Withdrawal Table Access & Structure Test
-    console.log("Test 2: Verifying Withdrawal Engine Table accessibility...");
-    const response2 = await fetch(`${SUPABASE_URL}/rest/v1/withdrawal_requests?select=*&limit=1`, {
-      method: 'GET',
-      headers: headers
-    });
-
-    if (!response2.ok) {
-      const data2 = await response2.json();
-      console.log("❌ TEST 2 FAILED!", data2.message || JSON.stringify(data2), "\n");
-    } else {
-      console.log("✅ TEST 2 PASSED! Withdrawal Engine is actively accepting connections.\n");
+      console.log("❌ Failed to insert test data. Cannot proceed with immutability test.");
     }
 
   } catch (error) {
@@ -59,8 +76,8 @@ async function runRealTests() {
   }
 
   console.log("==========================================");
-  console.log("🏁 ALL AUTOMATED TESTS COMPLETED.");
+  console.log("🏁 LEDGER INTEGRITY TESTS COMPLETED.");
   console.log("==========================================");
 }
 
-runRealTests();
+runLedgerTests();
