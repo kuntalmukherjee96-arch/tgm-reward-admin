@@ -1,0 +1,16 @@
+==========================================
+🛡️ STARTING RBAC & AUDIT TRAIL TEST...
+==========================================
+
+Step 1: Simulating an Admin Action (Finance Approval)...
+
+❌ AUDIT CREATION FAILED. Evidence of missing table or strict RLS.
+Error: {
+  code: '22P02',
+  details: null,
+  hint: null,
+  message: 'invalid input syntax for type uuid: "super_admin_user_007"'
+}
+==========================================
+🏁 RBAC & AUDIT TEST COMPLETED.
+==========================================
