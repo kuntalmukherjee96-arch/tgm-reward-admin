@@ -1,0 +1,14 @@
+==========================================
+🚀 STARTING AUTOMATED EVIDENCE TESTS (NATIVE MODE)...
+==========================================
+
+Test 1: Attempting to insert an INVALID status ('HACKER_STATUS') into KYC table...
+✅ TEST 1 PASSED! Database blocked invalid state transition.
+🔒 RAW DB EVIDENCE: new row for relation "kyc_requests" violates check constraint "valid_kyc_status" 
+
+Test 2: Verifying Withdrawal Engine Table accessibility...
+✅ TEST 2 PASSED! Withdrawal Engine is actively accepting connections.
+
+==========================================
+🏁 ALL AUTOMATED TESTS COMPLETED.
+==========================================
