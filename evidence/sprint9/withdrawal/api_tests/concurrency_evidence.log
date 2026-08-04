@@ -1,0 +1,15 @@
+==========================================
+⚡ STARTING CONCURRENCY (DOUBLE SETTLEMENT) TEST...
+==========================================
+
+Step 1: Firing TWO identical withdrawal requests at the EXACT SAME MILLISECOND...
+
+📩 Request 1 Status: 201 SUCCESS
+📩 Request 2 Status: 201 SUCCESS 
+
+❌ CRITICAL VULNERABILITY DETECTED! System allowed Double Settlement.
+Both requests were inserted successfully. We need to add a UNIQUE CONSTRAINT on Pending requests!
+
+==========================================
+🏁 CONCURRENCY TEST COMPLETED.
+==========================================
