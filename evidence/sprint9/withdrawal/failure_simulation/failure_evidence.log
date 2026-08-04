@@ -1,0 +1,23 @@
+==========================================
+🔥 STARTING FAILURE SIMULATION TESTS...
+==========================================
+
+Test 1: Simulating DB Connection Loss / Invalid Auth...
+📩 HTTP Status: 401
+✅ GRACEFUL FAILURE: No internal database stack trace leaked to client.
+🛡️ Error Structure: {"message":"Invalid API key","hint":"Double check your Supabase `anon` or `service_role` API key."} 
+
+Test 2: Simulating Unexpected Exception (Malformed Data)...
+📩 HTTP Status: 400
+✅ EXCEPTION HANDLED: API gracefully rejected malformed request without crashing the server.
+
+Test 3: Simulating Concurrent Admin Approval...
+Firing TWO approval requests from different Admins at the EXACT SAME MILLISECOND...
+📩 Admin 1 Attempt Status: 200
+📩 Admin 2 Attempt Status: 200
+⚠️ WARNING: Both requests processed.
+Note for Architecture: We need to implement 'Optimistic Concurrency Control' (Version Numbering) or an RPC function to enforce strict row-level locking for final Freeze.
+
+==========================================
+🏁 FAILURE SIMULATION TESTS COMPLETED.
+==========================================
