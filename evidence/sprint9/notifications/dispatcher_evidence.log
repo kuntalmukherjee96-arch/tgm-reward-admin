@@ -1,0 +1,13 @@
+==========================================
+🔔 STARTING NOTIFICATION DISPATCHER TEST...
+==========================================
+
+🚀 EVENT TRIGGERED: [WITHDRAWAL_APPROVED]
+
+[IN_APP] ✅ Successfully logged notification for User: user_vip_007
+[EMAIL] ✅ Triggered Email to User: user_vip_007
+        -> Subject: Withdrawal Successful
+
+==========================================
+✅ DISPATCHER TEST PASSED! Both adapters fired concurrently.
+==========================================
