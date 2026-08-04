@@ -1,3 +1,10 @@
+## [v1.0.0-sprint9.5-phaseC] - Notification Engine Frozen
+### Added
+- Enterprise Event-Driven Notification Infrastructure.
+- Dispatcher with Adapter Pattern (`InAppAdapter`, `EmailAdapter`).
+- Policy Engine for event filtering, user preferences (Mute/Unmute), and CRITICAL system overrides.
+- Retry Queue for handling third-party provider failures.
+- `notification_delivery_logs` table for strict delivery auditing and analytics.
 # CHANGELOG
 
 ## [v1.0.0-sprint9.5-phaseB] - Withdrawal Governance Frozen
