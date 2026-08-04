@@ -1,0 +1,26 @@
+==========================================
+💰 STARTING DEPOSIT WORKFLOW TEST (DORMANT MODE)...
+==========================================
+
+🛡️ Step 1: Checking Feature Flags...
+🔒 FEATURE FLAG 'deposit_enabled' is OFF. Running strictly in DORMANT mode.
+
+
+📥 Received Deposit Request from User: user_finance_99
+🔑 Idempotency Key: idem_req_555_abc
+✅ Idempotency check passed.
+🔍 Calculating Risk Score...
+📊 Risk Score: 38/100
+[UPI_RAZORPAY ADAPTER] Initiating transaction of 5000 INR
+✅ Payment Initiated Successfully. Provider Ref: txn_1785867804412
+📝 State changed to: DORMANT_PENDING (Awaiting Webhook)
+
+⚡ Simulating malicious duplicate submission 10ms later...
+
+📥 Received Deposit Request from User: user_finance_99
+🔑 Idempotency Key: idem_req_555_abc
+❌ REJECTED: Duplicate Request Detected! Idempotency key already exists.
+
+==========================================
+🏁 DEPOSIT INFRASTRUCTURE TEST COMPLETED.
+==========================================
