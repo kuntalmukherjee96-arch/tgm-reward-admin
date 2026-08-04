@@ -1,0 +1,23 @@
+==========================================
+🛡️ STARTING POLICY ENGINE & RETRY QUEUE TEST...
+==========================================
+
+
+🧠 Policy Engine Evaluating Event: [WITHDRAWAL_APPROVED] for User: user_123
+🔕 POLICY: Email muted by user. Dropping Email channel.
+🚀 Dispatching to Channels: [IN_APP, TELEGRAM]
+
+🧠 Policy Engine Evaluating Event: [CRITICAL_SYSTEM_FAILURE] for User: admin_001
+⚠️ POLICY: Critical Alert Detected. Bypassing user preferences (Always ON).
+🚀 Dispatching to Channels: [IN_APP, EMAIL, TELEGRAM, SMS]
+
+❌ Simulating Email Provider (SendGrid) 500 Timeout...
+📝 Logging 'FAILED' status to notification_delivery_logs.
+⏳ Added to Retry Queue: [EMAIL] for User: admin_001
+
+🔄 Processing Retry Queue Background Jobs...
+✅ Retry Successful for [EMAIL]. Status updated in notification_delivery_logs.
+
+==========================================
+🏁 POLICY ENGINE & RETRY QUEUE TEST COMPLETED.
+==========================================
