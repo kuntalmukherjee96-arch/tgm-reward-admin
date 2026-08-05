@@ -1,0 +1,26 @@
+==========================================
+📈 STARTING ANALYTICS & REVENUE INTELLIGENCE TEST...
+==========================================
+
+Test 1: Standard User Analytics Access Attempt...
+🔐 Checking RBAC for Analytics Access: [STANDARD_USER]
+❌ ACCESS DENIED: Financial analytics restricted to Admins.
+
+Test 2: Finance Admin Analytics Summary Fetch...
+🔐 Checking RBAC for Analytics Access: [FINANCE_ADMIN]
+✅ ACCESS GRANTED: Compiling real-time revenue and operational intelligence...
+📊 ANALYTICS REPORT PAYLOAD:
+ {
+  "status": "success",
+  "metrics": {
+    "total_successful_deposits_volume": 1250000,
+    "successful_withdrawals_count": 84,
+    "pending_deposits_count": 3,
+    "pending_withdrawals_count": 5,
+    "analytics_generated_at": "2026-08-05T06:20:13.102Z"
+  }
+}
+
+==========================================
+🏁 ANALYTICS ENGINE TEST COMPLETED SUCCESSFULLY.
+==========================================
