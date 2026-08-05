@@ -1,0 +1,19 @@
+==========================================
+🌐 STARTING UNIFIED API GATEWAY TEST...
+==========================================
+
+Test 1: Standard User accessing Config Center...
+🔀 Gateway routing request for path: [/api/admin/config] with Role: [STANDARD_USER]
+❌ 403 FORBIDDEN: Role [STANDARD_USER] lacks permission for module [Configuration Center].
+
+Test 2: Super Admin accessing Config Center...
+🔀 Gateway routing request for path: [/api/admin/config] with Role: [SUPER_ADMIN]
+✅ 200 OK: Securely routed to [Configuration Center] module.
+
+Test 3: Operations Manager accessing Observability...
+🔀 Gateway routing request for path: [/api/admin/observability] with Role: [OPERATIONS_MANAGER]
+✅ 200 OK: Securely routed to [Observability & Telemetry] module.
+
+==========================================
+🏁 API GATEWAY TEST COMPLETED SUCCESSFULLY.
+==========================================
