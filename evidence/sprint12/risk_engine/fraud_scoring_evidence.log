@@ -1,0 +1,21 @@
+===============================================================
+🛡️ STARTING FRAUD SCORING & ANOMALY DETECTION TEST...
+===============================================================
+
+--- SCENARIO 1: Normal User Behavior ---
+🔍 [ANALYSIS START] User: USR-101 | Amount: $150 | Recent Requests: 1
+📊 [RESULT] Final Risk Score: 10/100
+⚖️ [AI ADVISORY] Recommended Workflow Action: AUTO_APPROVE
+📝 [AUDIT] Logged to Event Bus.
+
+--- SCENARIO 2: Suspicious Bot/Fraud Behavior ---
+🔍 [ANALYSIS START] User: USR-999 | Amount: $1500 | Recent Requests: 5
+   🚩 [FLAG] High value transaction anomaly (+40 score)
+   🚩 [FLAG] High velocity / potential bot behavior detected (+35 score)
+📊 [RESULT] Final Risk Score: 85/100
+⚖️ [AI ADVISORY] Recommended Workflow Action: REQUIRE_FINANCE_ADMIN_APPROVAL
+📝 [AUDIT] Logged to Event Bus.
+
+===============================================================
+🏁 SPRINT 12 RISK ENGINE VALIDATION COMPLETED.
+===============================================================
