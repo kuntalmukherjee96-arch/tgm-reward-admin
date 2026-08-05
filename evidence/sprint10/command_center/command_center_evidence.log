@@ -1,0 +1,26 @@
+==========================================
+📊 STARTING COMMAND CENTER AGGREGATION TEST...
+==========================================
+
+Test 1: Low-level User Access Attempt...
+🔐 Checking RBAC for Role: [STANDARD_USER]
+❌ ACCESS DENIED: Insufficient privileges for Command Center.
+
+Test 2: Super Admin Command Center Fetch...
+🔐 Checking RBAC for Role: [SUPER_ADMIN]
+✅ ACCESS GRANTED: Fetching aggregated real-time metrics across domains...
+📈 AGGREGATED PAYLOAD: {
+  "status": "success",
+  "data": {
+    "pending_deposits": 3,
+    "pending_withdrawals": 5,
+    "total_support_interactions": 42,
+    "active_feature_flags_count": 2,
+    "system_health": "OPTIMAL",
+    "metrics_refreshed_at": "2026-08-05T05:48:12.506Z"
+  }
+}
+
+==========================================
+🏁 COMMAND CENTER TEST COMPLETED SUCCESSFULLY.
+==========================================RBAC Passed.
