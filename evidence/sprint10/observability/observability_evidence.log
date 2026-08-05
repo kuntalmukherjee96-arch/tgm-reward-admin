@@ -1,0 +1,43 @@
+==========================================
+📡 STARTING OBSERVABILITY & TELEMETRY TEST...
+==========================================
+
+Test 1: Standard User Telemetry Access Attempt...
+🔐 Checking RBAC for Observability Telemetry: [STANDARD_USER]
+❌ ACCESS DENIED: Observability restricted to Operations & Admins.
+
+Test 2: Operations Manager System Health & Telemetry Fetch...
+🔐 Checking RBAC for Observability Telemetry: [OPERATIONS_MANAGER]
+✅ ACCESS GRANTED: Compiling live platform observability telemetry...
+📊 OBSERVABILITY TELEMETRY PAYLOAD:
+ {
+  "status": "success",
+  "overall_system_health": "GREEN",
+  "telemetry": [
+    {
+      "metric_name": "API_LATENCY_MS",
+      "metric_value": 45.2,
+      "status": "GREEN"
+    },
+    {
+      "metric_name": "QUEUE_DELAY_SEC",
+      "metric_value": 1.2,
+      "status": "GREEN"
+    },
+    {
+      "metric_name": "ERROR_RATE_PCT",
+      "metric_value": 0.02,
+      "status": "GREEN"
+    },
+    {
+      "metric_name": "PROVIDER_FAILURE_PCT",
+      "metric_value": 0.5,
+      "status": "GREEN"
+    }
+  ],
+  "checked_at": "2026-08-05T06:54:24.978Z"
+}
+
+==========================================
+🏁 OBSERVABILITY ENGINE TEST COMPLETED SUCCESSFULLY.
+==========================================
