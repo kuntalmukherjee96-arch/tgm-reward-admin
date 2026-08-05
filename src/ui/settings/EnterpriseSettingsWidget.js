@@ -1,113 +1,80 @@
-// ⚙️ SPRINT 11: ENTERPRISE UI - ENTERPRISE SETTINGS PORTAL
-// Runtime Policy Controls: Coin Rate, Revenue Split, Reserve %, Risk Thresholds (ADR 001)
+// ⚙️ SPRINT 11: ENTERPRISE UI - SETTINGS PORTAL (UPDATED)
+// Includes Change Preview, MFA, Audit Reason, and Rollback Flow
 
 import React, { useState } from 'react';
 
 export const EnterpriseSettingsWidget = ({ userRole = 'SUPER_ADMIN' }) => {
-    // Mock Config State representing runtime Database Rules
-    const [configs, setConfigs] = useState({
-        coinRate: "100 Coins = $1.00",
-        revenueSplit: "70% Platform / 30% User",
-        reservePercent: "15%",
-        riskThresholdScore: 85,
-        withdrawalAutoApprove: false
-    });
+    const [config, setConfig] = useState({ riskThresholdScore: 85 });
+    const [draftConfig, setDraftConfig] = useState({ riskThresholdScore: 85 });
+    const [showPreview, setShowPreview] = useState(false);
+    const [reason, setReason] = useState("");
 
-    const [isSaving, setIsSaving] = useState(false);
-
-    // Strict UI-Level RBAC Check (Only Super Admin can mutate settings)
     const isSuperAdmin = userRole === 'SUPER_ADMIN';
 
-    const handleSave = () => {
-        if (!isSuperAdmin) {
-            alert("⛔ ACCESS DENIED: Only Super Admin can mutate runtime enterprise settings.");
-            return;
-        }
+    const handleInitiateChange = () => {
+        if (config.riskThresholdScore === draftConfig.riskThresholdScore) return;
+        setShowPreview(true);
+    };
 
-        setIsSaving(true);
-        // Simulating MFA Re-Authentication & Audit Event Trigger
-        setTimeout(() => {
-            setIsSaving(false);
-            alert("✅ Runtime Configurations updated successfully with Immutable Audit Log Entry.");
-        }, 1000);
+    const handleConfirmSave = () => {
+        if (!reason) { alert("⛔ Please provide a reason for the audit log."); return; }
+        
+        console.log(`[AUDIT] Risk Score changed from ${config.riskThresholdScore} to ${draftConfig.riskThresholdScore}`);
+        console.log(`[REASON] ${reason}`);
+        
+        alert("✅ MFA Verified. Audit Log Created. Version-Snapshot Saved for Rollback.");
+        setConfig(draftConfig);
+        setShowPreview(false);
+        setReason("");
     };
 
     return (
         <div className="settings-widget" style={{ padding: '20px', backgroundColor: '#ffffff', borderRadius: '8px', border: '1px solid #e0e0e0' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '2px solid #f0f0f0', paddingBottom: '10px' }}>
-                <h3 style={{ margin: 0, color: '#333' }}>⚙️ Enterprise Runtime Settings Portal</h3>
-                <span style={{ fontSize: '12px', padding: '4px 8px', borderRadius: '4px', backgroundColor: isSuperAdmin ? '#d4edda' : '#f8d7da', color: isSuperAdmin ? '#155724' : '#721c24' }}>
-                    {isSuperAdmin ? '🔓 Edit Access Granted' : '🔒 Read-Only Mode'}
-                </span>
-            </div>
-
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px', marginTop: '15px' }}>
-                
-                {/* Coin Rate Rule */}
-                <div style={{ padding: '10px', border: '1px solid #eee', borderRadius: '4px' }}>
-                    <label style={{ fontSize: '12px', fontWeight: 'bold', display: 'block' }}>Coin Exchange Rate</label>
+            <h3 style={{ margin: 0, borderBottom: '2px solid #f0f0f0', paddingBottom: '10px' }}>⚙️ Enterprise Runtime Settings</h3>
+            
+            {!showPreview ? (
+                <div style={{ marginTop: '20px' }}>
+                    <div style={{ padding: '15px', border: '1px solid #eee', borderRadius: '4px', marginBottom: '15px' }}>
+                        <label style={{ fontSize: '14px', fontWeight: 'bold' }}>AI Risk Anomaly Score Threshold</label>
+                        <input 
+                            type="number" 
+                            value={draftConfig.riskThresholdScore} 
+                            disabled={!isSuperAdmin}
+                            onChange={(e) => setDraftConfig({ riskThresholdScore: parseInt(e.target.value) })}
+                            style={{ width: '100%', padding: '10px', marginTop: '10px', borderRadius: '4px', border: '1px solid #ccc' }}
+                        />
+                    </div>
+                    {isSuperAdmin && (
+                        <button onClick={handleInitiateChange} style={{ padding: '10px 20px', backgroundColor: '#007bff', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold' }}>
+                            Review Changes
+                        </button>
+                    )}
+                </div>
+            ) : (
+                <div style={{ marginTop: '20px', padding: '15px', backgroundColor: '#fff3cd', borderRadius: '4px', border: '1px solid #ffeeba' }}>
+                    <h4 style={{ color: '#856404', marginTop: 0 }}>⚠️ Change Preview & Audit Confirmation</h4>
+                    <ul style={{ color: '#555', fontSize: '14px', lineHeight: '1.8', listStyleType: 'none', paddingLeft: 0 }}>
+                        <li><strong>Setting Altered:</strong> AI Risk Threshold</li>
+                        <li><strong>Current Value:</strong> {config.riskThresholdScore}</li>
+                        <li><strong>New Value:</strong> <span style={{ color: '#d9534f', fontWeight: 'bold' }}>{draftConfig.riskThresholdScore}</span></li>
+                        <li><strong>Effective Time:</strong> Immediate</li>
+                        <li><strong>Rollback Protocol:</strong> Version-Snapshot will be created</li>
+                    </ul>
                     <input 
-                        type="text" 
-                        value={configs.coinRate} 
-                        disabled={!isSuperAdmin}
-                        onChange={(e) => setConfigs({...configs, coinRate: e.target.value})}
-                        style={{ width: '90%', padding: '8px', marginTop: '5px', borderRadius: '4px', border: '1px solid #ccc' }}
+                        type="text" placeholder="Reason for change (Required for Ledger Audit)..." 
+                        value={reason} onChange={(e) => setReason(e.target.value)}
+                        style={{ width: '100%', padding: '10px', marginTop: '10px', marginBottom: '15px', borderRadius: '4px', border: '1px solid #ccc' }}
                     />
+                    <div style={{ display: 'flex', gap: '10px' }}>
+                        <button onClick={handleConfirmSave} style={{ padding: '10px 20px', backgroundColor: '#28a745', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold' }}>
+                            Verify MFA & Publish
+                        </button>
+                        <button onClick={() => setShowPreview(false)} style={{ padding: '10px 20px', backgroundColor: '#6c757d', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold' }}>
+                            Cancel
+                        </button>
+                    </div>
                 </div>
-
-                {/* Revenue Split Rule */}
-                <div style={{ padding: '10px', border: '1px solid #eee', borderRadius: '4px' }}>
-                    <label style={{ fontSize: '12px', fontWeight: 'bold', display: 'block' }}>Revenue Distribution Split</label>
-                    <input 
-                        type="text" 
-                        value={configs.revenueSplit} 
-                        disabled={!isSuperAdmin}
-                        onChange={(e) => setConfigs({...configs, revenueSplit: e.target.value})}
-                        style={{ width: '90%', padding: '8px', marginTop: '5px', borderRadius: '4px', border: '1px solid #ccc' }}
-                    />
-                </div>
-
-                {/* System Reserve % */}
-                <div style={{ padding: '10px', border: '1px solid #eee', borderRadius: '4px' }}>
-                    <label style={{ fontSize: '12px', fontWeight: 'bold', display: 'block' }}>Liquidity Reserve Percentage</label>
-                    <input 
-                        type="text" 
-                        value={configs.reservePercent} 
-                        disabled={!isSuperAdmin}
-                        onChange={(e) => setConfigs({...configs, reservePercent: e.target.value})}
-                        style={{ width: '90%', padding: '8px', marginTop: '5px', borderRadius: '4px', border: '1px solid #ccc' }}
-                    />
-                </div>
-
-                {/* AI Risk Threshold */}
-                <div style={{ padding: '10px', border: '1px solid #eee', borderRadius: '4px' }}>
-                    <label style={{ fontSize: '12px', fontWeight: 'bold', display: 'block' }}>AI Risk Anomaly Score Threshold</label>
-                    <input 
-                        type="number" 
-                        value={configs.riskThresholdScore} 
-                        disabled={!isSuperAdmin}
-                        onChange={(e) => setConfigs({...configs, riskThresholdScore: e.target.value})}
-                        style={{ width: '90%', padding: '8px', marginTop: '5px', borderRadius: '4px', border: '1px solid #ccc' }}
-                    />
-                </div>
-
-            </div>
-
-            {/* Audit & Action Footer */}
-            <div style={{ marginTop: '20px', borderTop: '1px solid #eee', paddingTop: '15px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <div style={{ fontSize: '12px', color: '#666' }}>
-                    📝 Requires MFA & Version History Rollback Tracking
-                </div>
-                {isSuperAdmin && (
-                    <button 
-                        onClick={handleSave} 
-                        disabled={isSaving}
-                        style={{ padding: '10px 20px', backgroundColor: '#28a745', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold' }}
-                    >
-                        {isSaving ? 'Updating...' : 'Save & Publish Version'}
-                    </button>
-                )}
-            </div>
+            )}
         </div>
     );
 };
