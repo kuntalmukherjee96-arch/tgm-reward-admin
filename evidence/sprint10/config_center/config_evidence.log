@@ -1,0 +1,19 @@
+==========================================
+⚙️ STARTING CONFIGURATION CENTER TEST...
+==========================================
+
+Test 1: Fetching initial configs at runtime...
+📖 FETCH CONFIG [GLOBAL_DEPOSIT_ENABLED]: false
+
+Test 2: Dynamic Runtime Mutation...
+
+✍️ SUPER ADMIN [super_admin_007] attempting to update [GLOBAL_DEPOSIT_ENABLED]...
+✅ SUCCESS: Config [GLOBAL_DEPOSIT_ENABLED] updated at runtime without server restart!
+📝 POLICY AUDIT RECORDED: {"timestamp":"2026-08-05T05:40:08.154Z","adminId":"super_admin_007","action":"UPDATE_CONFIG","key":"GLOBAL_DEPOSIT_ENABLED","oldValue":false,"newValue":true}
+
+Test 3: Verifying updated value...
+📖 FETCH CONFIG [GLOBAL_DEPOSIT_ENABLED]: true
+
+==========================================
+🏁 CONFIGURATION CENTER TEST COMPLETED.
+==========================================
