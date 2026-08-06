@@ -1,0 +1,26 @@
+===============================================================
+⚙️ STARTING SPRINT 14: DYNAMIC PROVIDER CONFIG TEST
+===============================================================
+
+--- SCENARIO 1: SUPER_ADMIN ENABLES LOOTABLY IN PRODUCTION ---
+
+[CONFIG CENTER] ⚙️ Update request received for 'lootably'
+   ✅ Provider updated successfully! Mode: [PRODUCTION] | Enabled: [true]
+
+--- SCENARIO 2: SUPER_ADMIN UPDATES REVENUE SPLIT (VALID) ---
+
+[CONFIG CENTER] ⚙️ Update request received for 'lootably'
+   ✅ Provider updated successfully! Mode: [PRODUCTION] | Enabled: [true]
+   📊 New Revenue Split -> User: 80% | Platform: 10% | Reserve: 10%
+
+--- SCENARIO 3: SUPER_ADMIN ENTERS INVALID SPLIT ---
+
+[CONFIG CENTER] ⚙️ Update request received for 'lootably'
+
+--- SCENARIO 4: UNAUTHORIZED ADMIN TRIES TO CHANGE CONFIG ---
+
+[CONFIG CENTER] ⚙️ Update request received for 'lootably'
+
+===============================================================
+🏁 PROVIDER CONFIG EVIDENCE GENERATED SUCCESSFULLY.
+===============================================================
