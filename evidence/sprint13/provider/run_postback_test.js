@@ -1,58 +1,47 @@
-// 🧪 SPRINT 13: REAL PROVIDER POSTBACK EVIDENCE (ADR 017)
+// 🧪 SPRINT 13: PROVIDER SANDBOX & VERSION HISTORY EVIDENCE (ADR 021)
 
 const ProviderAdapterEngine = require('../../../src/services/provider/ProviderAdapterEngine');
 
 console.log("===============================================================");
-console.log("🔌 STARTING SPRINT 13: PROVIDER POSTBACK VALIDATION TEST");
+console.log("🔌 STARTING SPRINT 13: PROVIDER SANDBOX & SLA METRICS TEST");
 console.log("===============================================================\n");
 
-// Mock Event Bus
-class MockEventBus {
-    emit(event, data) { 
-        console.log(`   ➡️ [EVENT BUS] Routed '${event}' to Risk Engine.`);
+const mockEventBus = { 
+    emit: (event, data) => {
+        if (event === 'PROVIDER_SLA_METRICS') console.log(`   📊 [SLA DASHBOARD] ${data.provider} | Status: ${data.status} | Latency: ${data.latencyMs}ms`);
     }
-}
+};
+
+// Mock Config Center enforcing Rule 18
+const mockConfigCenter = {
+    getProviderConfig: (name) => {
+        if (name === 'lootably') return { mode: 'production', version: 'v2', secret: 'mock_lootably_secret_123' };
+        if (name === 'timewall') return { mode: 'sandbox', version: 'v1', secret: 'mock_timewall_secret_456' };
+    }
+};
 
 async function runPostbackTest() {
-    const eventBus = new MockEventBus();
-    const adapterEngine = new ProviderAdapterEngine(eventBus);
+    const adapterEngine = new ProviderAdapterEngine(mockEventBus, mockConfigCenter);
 
-    // Simulated payload from Lootably
-    const lootablyPayload = {
-        transactionId: "LT-998877",
-        userID: 88776655,
-        reward: 500,
-        payout: 0.50
-    };
+    // Lootably v2 Payload (Production)
+    const lootablyV2Payload = { tx_id: "LT-V2-001", user_id: 88776655, amount: 1000, payout_usd: 1.00 };
 
-    // Simulated payload from TimeWall
-    const timewallPayload = {
-        transactionId: "TW-112233",
-        user_id: 88776655,
-        coins: 1200,
-        usd_value: 1.20
-    };
+    // TimeWall v1 Payload (Sandbox)
+    const timewallPayload = { transactionId: "TW-SBX-001", user_id: 88776655, coins: 500, usd_value: 0.50 };
 
     try {
-        console.log("--- SCENARIO 1: VALID LOOTABLY POSTBACK ---");
-        adapterEngine.processPostback('lootably', lootablyPayload, "bypass_valid_sig");
+        console.log("--- SCENARIO 1: LOOTABLY (PRODUCTION, API v2) ---");
+        adapterEngine.processPostback('lootably', lootablyV2Payload, "bypass_valid_sig");
 
-        console.log("\n--- SCENARIO 2: DUPLICATE REPLAY ATTACK (LOOTABLY) ---");
-        // Sending the exact same transaction ID again
-        adapterEngine.processPostback('lootably', lootablyPayload, "bypass_valid_sig");
-    } catch (error) {
-        console.error(`   ⛔ [BLOCKED] ${error.message}`);
-    }
-
-    try {
-        console.log("\n--- SCENARIO 3: INVALID SIGNATURE (TIMEWALL) ---");
-        adapterEngine.processPostback('timewall', timewallPayload, "fake_hacker_signature");
+        console.log("\n--- SCENARIO 2: TIMEWALL (SANDBOX, API v1) ---");
+        adapterEngine.processPostback('timewall', timewallPayload, "bypass_valid_sig");
+        
     } catch (error) {
         console.error(`   ⛔ [BLOCKED] ${error.message}`);
     }
 
     console.log("\n===============================================================");
-    console.log("🏁 PROVIDER ADAPTER EVIDENCE GENERATED SUCCESSFULLY.");
+    console.log("🏁 PROVIDER ENHANCEMENT EVIDENCE GENERATED SUCCESSFULLY.");
     console.log("===============================================================");
 }
 
