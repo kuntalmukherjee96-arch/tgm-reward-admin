@@ -1,0 +1,21 @@
+===============================================================
+🔌 STARTING SPRINT 13: PROVIDER POSTBACK VALIDATION TEST
+===============================================================
+
+--- SCENARIO 1: VALID LOOTABLY POSTBACK ---
+
+[PROVIDER ENGINE] 📥 Received postback from LOOTABLY
+   ✅ Postback Validated & Normalized. User Reward: 500 Coins
+   ➡️ [EVENT BUS] Routed 'PROVIDER_REWARD_VERIFIED' to Risk Engine.
+
+--- SCENARIO 2: DUPLICATE REPLAY ATTACK (LOOTABLY) ---
+
+[PROVIDER ENGINE] 📥 Received postback from LOOTABLY
+
+--- SCENARIO 3: INVALID SIGNATURE (TIMEWALL) ---
+
+[PROVIDER ENGINE] 📥 Received postback from TIMEWALL
+
+===============================================================
+🏁 PROVIDER ADAPTER EVIDENCE GENERATED SUCCESSFULLY.
+===============================================================
