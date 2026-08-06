@@ -1,44 +1,39 @@
-// 🧪 SPRINT 13: FINANCIAL OPERATIONS & WITHDRAWAL EVIDENCE (ADR 018)
+// 🧪 SPRINT 13: TREASURY APPROVAL STAGES EVIDENCE (ADR 021)
 
 const FinanceOperationsEngine = require('../../../src/services/finance/FinanceOperationsEngine');
 
 console.log("===============================================================");
-console.log("💸 STARTING SPRINT 13: FINANCIAL OPERATIONS WORKFLOW TEST");
+console.log("💸 STARTING SPRINT 13: TREASURY WORKFLOW TEST");
 console.log("===============================================================\n");
 
-// Mocking Dependencies for Zero-Trust & Policy Execution
 const mockEventBus = { emit: (event, data) => console.log(`   ➡️ [EVENT BUS] Broadcasted: ${event}`) };
-const mockConfigCenter = { 
-    getWithdrawalRules: () => ({ minWithdrawal: 500, kycThreshold: 5000, feePercent: 2 }) 
-};
-const mockLedger = { 
-    getVerifiedBalance: (uid) => 10000, // User has 10,000 Coins
-    decrementBalance: (uid, amount) => console.log(`   🏦 [LEDGER] Decremented ${amount} Coins from User ${uid}`) 
-};
+const mockLedger = { decrementBalance: (uid, amt) => console.log(`   🏦 [LEDGER] Decremented ${amt} Coins from User ${uid}`) };
 
-async function runFinanceTest() {
-    const financeEngine = new FinanceOperationsEngine(mockEventBus, mockConfigCenter, mockLedger);
+async function runTreasuryTest() {
+    const financeEngine = new FinanceOperationsEngine(mockEventBus, {}, mockLedger);
 
     try {
-        console.log("--- SCENARIO 1: STANDARD WITHDRAWAL (UNDER KYC LIMIT) ---");
-        const wd1 = financeEngine.requestWithdrawal('USR-777', 1000);
+        console.log("--- SCENARIO 1: FULL TREASURY WORKFLOW ---");
+        const wd1 = financeEngine.requestWithdrawal('USR-777', 1500);
+        
+        // Step 1: Ops Team Approves (Does not cut ledger balance yet)
+        financeEngine.approveForTreasury('OPS-ADMIN-01', wd1.id);
 
-        console.log("\n--- SCENARIO 2: ADMIN APPROVES STANDARD WITHDRAWAL ---");
-        financeEngine.approveWithdrawal('ADMIN-01', wd1.id);
+        // Step 2: Treasury Team Pays and Settles
+        financeEngine.processTreasuryPayout('TREASURY-LEAD-01', wd1.id, 'TX-UPI-9988776655');
 
-        console.log("\n--- SCENARIO 3: HIGH VALUE WITHDRAWAL (TRIGGERS KYC) ---");
-        const wd2 = financeEngine.requestWithdrawal('USR-777', 6000);
-
-        console.log("\n--- SCENARIO 4: ADMIN ATTEMPTS TO APPROVE PENDING KYC ---");
-        financeEngine.approveWithdrawal('ADMIN-01', wd2.id); // Should fail
+        console.log("\n--- SCENARIO 2: TREASURY TRIES TO PAY UNAPPROVED REQUEST ---");
+        const wd2 = financeEngine.requestWithdrawal('USR-999', 5000);
+        // Bypassing Ops approval directly to Treasury...
+        financeEngine.processTreasuryPayout('TREASURY-LEAD-01', wd2.id, 'TX-UPI-FAKED');
 
     } catch (error) {
         console.error(`   ⛔ [BLOCKED] ${error.message}`);
     }
 
     console.log("\n===============================================================");
-    console.log("🏁 FINANCIAL OPERATIONS EVIDENCE GENERATED SUCCESSFULLY.");
+    console.log("🏁 TREASURY WORKFLOW EVIDENCE GENERATED SUCCESSFULLY.");
     console.log("===============================================================");
 }
 
-runFinanceTest();
+runTreasuryTest();

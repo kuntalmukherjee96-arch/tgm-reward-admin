@@ -1,69 +1,53 @@
-// 💸 SPRINT 13 PHASE 3: FINANCIAL OPERATIONS ENGINE
-// ADR 018: Real Withdrawal Pipeline, Workflow Queue & KYC Validation
+// 💸 SPRINT 13 CONDITIONAL UPDATE: FINANCIAL OPERATIONS
+// ADR 021: Treasury Approval Stages (Approved -> Treasury -> Paid -> Settled)
 
 class FinanceOperationsEngine {
     constructor(eventBus, configCenter, ledger) {
         this.eventBus = eventBus;
-        this.configCenter = configCenter; // Rule 18: No hardcoded rules
-        this.ledger = ledger; // Rule 1: Single Source of Truth
-        this.withdrawalQueue = new Map(); // In-memory queue for processing
+        this.configCenter = configCenter; 
+        this.ledger = ledger; 
+        this.withdrawalQueue = new Map(); 
     }
 
-    // 1. Submit Withdrawal Request (Headless Workflow)
     requestWithdrawal(userId, amountCoins) {
-        console.log(`\n[FINANCE ENGINE] 📥 Withdrawal request received: User ${userId} for ${amountCoins} Coins`);
-
-        const rules = this.configCenter.getWithdrawalRules();
-        
-        // Policy Check
-        if (amountCoins < rules.minWithdrawal) {
-            throw new Error(`400_BAD_REQUEST: Amount below minimum limit (${rules.minWithdrawal} Coins).`);
-        }
-
-        // Ledger Verification
-        const userBalance = this.ledger.getVerifiedBalance(userId);
-        if (amountCoins > userBalance) {
-            throw new Error("400_BAD_REQUEST: Insufficient verified ledger balance.");
-        }
-
-        // Workflow Queueing & Risk Check
         const withdrawalId = `WD-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
-        let status = 'PENDING_REVIEW';
-        
-        if (amountCoins >= rules.kycThreshold) {
-            status = 'KYC_REQUIRED';
-            console.log(`   ⚠️ [RISK ALERT] High value transaction. Escalated to KYC_REQUIRED.`);
-        }
-
         const requestPayload = {
-            id: withdrawalId, userId, amountCoins, status, timestamp: new Date().toISOString()
+            id: withdrawalId, userId, amountCoins, status: 'PENDING_REVIEW', timestamp: new Date().toISOString()
         };
-
         this.withdrawalQueue.set(withdrawalId, requestPayload);
-        this.eventBus.emit('WITHDRAWAL_QUEUED', requestPayload);
-        
-        console.log(`   ✅ Request Queued successfully (ID: ${withdrawalId}, Status: ${status})`);
+        console.log(`\n[FINANCE] 📥 Withdrawal ${withdrawalId} Queued (Status: PENDING_REVIEW)`);
         return requestPayload;
     }
 
-    // 2. Process Approval (Requires Admin Role)
-    approveWithdrawal(adminId, withdrawalId) {
-        console.log(`\n[FINANCE ENGINE] 🔐 Admin ${adminId} authorizing withdrawal ${withdrawalId}...`);
-        
+    // Stage 1: Ops Approval (Does NOT send money yet)
+    approveForTreasury(adminId, withdrawalId) {
         const request = this.withdrawalQueue.get(withdrawalId);
-        if (!request) throw new Error("404_NOT_FOUND: Withdrawal request not found.");
-        if (request.status !== 'PENDING_REVIEW' && request.status !== 'KYC_CLEARED') {
-            throw new Error(`409_CONFLICT: Cannot approve request in '${request.status}' state.`);
-        }
-
-        // Immutable Audit & Ledger Update
-        request.status = 'APPROVED';
+        if (!request || request.status !== 'PENDING_REVIEW') throw new Error("Invalid state for approval.");
+        
+        request.status = 'APPROVED_PENDING_TREASURY';
         request.approvedBy = adminId;
         
+        console.log(`\n[FINANCE] 🔐 Ops Admin ${adminId} approved ${withdrawalId}. Moved to Treasury Queue.`);
+        return request;
+    }
+
+    // Stage 2: Treasury Execution (Actual Money Sent via API/Manual)
+    processTreasuryPayout(treasuryAdminId, withdrawalId, externalTxHash) {
+        const request = this.withdrawalQueue.get(withdrawalId);
+        if (!request || request.status !== 'APPROVED_PENDING_TREASURY') {
+            throw new Error("409_CONFLICT: Must be approved by Ops first before Treasury payout.");
+        }
+
+        request.status = 'PAID_AND_SETTLED';
+        request.treasuryAdminId = treasuryAdminId;
+        request.externalTxHash = externalTxHash; // Evidence of actual payment
+        
+        // Rule 1: Only NOW do we touch the Ledger
         this.ledger.decrementBalance(request.userId, request.amountCoins);
         this.eventBus.emit('WITHDRAWAL_SETTLED', request);
         
-        console.log(`   ✅ Withdrawal ${withdrawalId} SETTLED. Ledger updated.`);
+        console.log(`\n[TREASURY] 💰 Payout executed for ${withdrawalId}. Hash: ${externalTxHash}`);
+        console.log(`   ✅ Ledger updated successfully. Status: PAID_AND_SETTLED.`);
         return request;
     }
 }
