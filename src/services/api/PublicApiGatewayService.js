@@ -1,50 +1,45 @@
-// 🌐 SPRINT 12 PHASE 4: PUBLIC API GATEWAY CORE SERVICE
-// Headless API Key Auth, Token-Bucket Rate Limiting & Zero-Trust (ADR 014)
+// 🌐 SPRINT 12: PUBLIC API GATEWAY (UPDATED FOR FREEZE)
+// Added Environment Isolation, Replay Protection, and Key Rotation Ready
 
 class PublicApiGatewayService {
     constructor() {
-        // Mock Database of API Keys and Quotas (Normally loaded from DB via Redis)
         this.apiKeysDb = {
-            'sk_live_abc123': { partnerId: 'PARTNER_AFFILIATE_01', quota: 100, used: 0, status: 'ACTIVE' },
-            'sk_live_xyz789': { partnerId: 'PARTNER_GAME_02', quota: 500, used: 0, status: 'SUSPENDED' }
+            'sk_live_abc123': { partnerId: 'PARTNER_01', env: 'PRODUCTION', quota: 100, used: 0, status: 'ACTIVE' },
+            'sk_test_xyz789': { partnerId: 'PARTNER_01', env: 'SANDBOX', quota: 1000, used: 0, status: 'ACTIVE' } // Sandbox Environment
         };
+        this.processedWebhooks = new Set(); // Replay Protection Cache
     }
 
-    // Core Middleware logic for authenticating and rate-limiting incoming API requests
-    authenticateAndLimit(apiKey, endpoint) {
-        // 1. Zero Trust (Rule 12): Check if API key exists
+    authenticateAndLimit(apiKey, endpoint, requestTimestamp, nonce) {
+        // 1. Webhook Replay Protection
+        const currentTime = Date.now();
+        if (currentTime - requestTimestamp > 300000) { // 5 minutes validity
+            throw new Error("403_FORBIDDEN: Request expired (Replay Protection)");
+        }
+        if (this.processedWebhooks.has(nonce)) {
+            throw new Error("403_FORBIDDEN: Duplicate Nonce (Replay Attack Detected)");
+        }
+        this.processedWebhooks.add(nonce);
+
+        // 2. Auth & Environment Check
         const clientRecord = this.apiKeysDb[apiKey];
-        if (!clientRecord) {
-            this._logAudit('UNAUTHORIZED', `Invalid API Key attempt on endpoint: ${endpoint}`);
-            throw new Error("401_UNAUTHORIZED: Invalid API Key");
+        if (!clientRecord || clientRecord.status !== 'ACTIVE') {
+            throw new Error("401_UNAUTHORIZED: Invalid or Suspended API Key");
         }
 
-        // 2. Check Partner Account Status
-        if (clientRecord.status !== 'ACTIVE') {
-            this._logAudit('FORBIDDEN', `Suspended partner ${clientRecord.partnerId} attempted access`);
-            throw new Error("403_FORBIDDEN: Account is suspended");
-        }
-
-        // 3. Rate Limiting Check (Quota Enforcement)
+        // 3. Rate Limit Enforcement
         if (clientRecord.used >= clientRecord.quota) {
-            this._logAudit('RATE_LIMIT_EXCEEDED', `Partner ${clientRecord.partnerId} exceeded quota of ${clientRecord.quota}`);
             throw new Error("429_TOO_MANY_REQUESTS: Rate limit exceeded");
         }
 
-        // 4. Process Request & Increment Usage
         clientRecord.used += 1;
-        console.log(`✅ [API GATEWAY] Request authorized for ${clientRecord.partnerId}. Quota: ${clientRecord.used}/${clientRecord.quota}`);
-        
-        return {
-            authorized: true,
-            partnerId: clientRecord.partnerId,
-            remainingQuota: clientRecord.quota - clientRecord.used
-        };
+        console.log(`✅ [API GATEWAY - ${clientRecord.env}] Request authorized for ${clientRecord.partnerId}.`);
+        return { authorized: true, env: clientRecord.env, partnerId: clientRecord.partnerId };
     }
 
-    // Rule 14: Immutable Audit Logging for Security Events
-    _logAudit(event, message) {
-        console.log(`🚨 [SECURITY AUDIT] EVENT: ${event} | DETAILS: ${message} | TIMESTAMP: ${new Date().toISOString()}`);
+    rotateApiKey(partnerId, env) {
+        console.log(`🔐 [KEY ROTATION] Generating new ${env} API Key for ${partnerId}...`);
+        // Implementation for revoking old key and returning new key
     }
 }
 

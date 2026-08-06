@@ -1,68 +1,40 @@
-// 🧠 SPRINT 12 PHASE 2: INTELLIGENCE & RISK ENGINE CORE SERVICE
-// Headless AI Advisory, Fraud Scoring, and Audit Logging (ADR 012)
+// 🧠 SPRINT 12: RISK ENGINE (UPDATED FOR FREEZE)
+// Expanded Risk Model: Geo, VPN, Impossible Travel, History Cluster
 
 class RiskEngineService {
-    constructor() {
-        // Enterprise rules configuration (Normally loaded from DB/Settings Portal)
-        this.rules = {
-            highValueThreshold: 1000,
-            velocityLimit: 3,
-            autoApproveMaxScore: 39,
-            highRiskMinScore: 80
-        };
-    }
-
     async evaluateTransaction(transaction) {
-        let riskScore = 10; // Base risk score
+        let riskScore = 10; 
         const auditTrail = [];
 
-        // 1. High-Value Rule
-        if (transaction.amount > this.rules.highValueThreshold) {
-            riskScore += 40;
-            auditTrail.push(`FLAG: High value transaction (> $${this.rules.highValueThreshold})`);
+        // 1. Basic Rules
+        if (transaction.amount > 1000) { riskScore += 20; auditTrail.push("High value transaction"); }
+        if (transaction.recentRequestsCount > 3) { riskScore += 15; auditTrail.push("High velocity"); }
+
+        // 2. Advanced Enterprise Fraud Indicators (New Additions)
+        if (transaction.isNewDevice) { riskScore += 10; auditTrail.push("New Device Signature"); }
+        if (transaction.vpnProbability > 0.8) { riskScore += 25; auditTrail.push("High VPN/Proxy Probability"); }
+        if (transaction.geoDistanceKm > 500 && transaction.timeSinceLastLoginHrs < 2) { 
+            riskScore += 40; 
+            auditTrail.push("Impossible Travel Detected"); 
+        }
+        if (transaction.historicalFraudCluster) {
+            riskScore += 30;
+            auditTrail.push("Matched Historical Fraud Cluster (IP/Device)");
         }
 
-        // 2. Velocity Rule (Too many requests in a short time)
-        if (transaction.recentRequestsCount > this.rules.velocityLimit) {
-            riskScore += 35;
-            auditTrail.push(`FLAG: High velocity detected (${transaction.recentRequestsCount} recent requests)`);
-        }
-
-        // 3. New Device/IP Anomaly
-        if (transaction.isNewDevice) {
-            riskScore += 20;
-            auditTrail.push(`FLAG: Action initiated from a new unrecognized device`);
-        }
-
-        // Cap the score at 100 max
         riskScore = Math.min(riskScore, 100);
 
-        // Determine Workflow Action (Advisory Only - Alignment with Ledger Rules)
-        let recommendedAction;
-        if (riskScore >= this.rules.highRiskMinScore) {
-            recommendedAction = "REQUIRE_FINANCE_ADMIN_APPROVAL";
-        } else if (riskScore > this.rules.autoApproveMaxScore) {
-            recommendedAction = "STANDARD_HUMAN_REVIEW";
-        } else {
-            recommendedAction = "AUTO_APPROVE";
-        }
+        let recommendedAction = "AUTO_APPROVE";
+        if (riskScore >= 80) recommendedAction = "REQUIRE_FINANCE_ADMIN_APPROVAL";
+        else if (riskScore > 39) recommendedAction = "STANDARD_HUMAN_REVIEW";
 
-        // Rule 14: Every Business Action Creates History (Immutable Audit)
         this._logToEventBus(transaction.id, riskScore, recommendedAction, auditTrail);
-
-        return {
-            transactionId: transaction.id,
-            finalScore: riskScore,
-            advisory: recommendedAction,
-            flags: auditTrail
-        };
+        return { transactionId: transaction.id, finalScore: riskScore, advisory: recommendedAction, flags: auditTrail };
     }
 
     _logToEventBus(txId, score, advisory, flags) {
-        console.log(`📝 [AUDIT LEDGER] TxID: ${txId} | Risk Score: ${score} | Advisory: ${advisory}`);
-        if (flags.length > 0) {
-            console.log(`   ↳ Reasons: ${flags.join(' | ')}`);
-        }
+        console.log(`📝 [AUDIT] TxID: ${txId} | Score: ${score} | Advisory: ${advisory}`);
+        console.log(`   ↳ Triggers: ${flags.join(' | ')}`);
     }
 }
 
