@@ -1,0 +1,26 @@
+===============================================================
+👤 STARTING SPRINT 13: EVENT-DRIVEN PROFILE & REFERRAL TEST
+===============================================================
+
+--- SCENARIO 1: SIMULATING NEW USER AUTHENTICATION ---
+[AUTH GATEWAY] 🚀 Emitting 'USER_IDENTITY_CREATED' event...
+
+[PROFILE CENTER] 📥 Received 'USER_IDENTITY_CREATED' event for ID: 88776655
+   ✅ Profile successfully provisioned!
+   🔗 Assigned Referral Identity: REF-6655-VIVV
+[EVENT BUS] 📢 Event 'PROFILE_PROVISIONED' broadcasted with no listeners.
+
+--- SCENARIO 2: FETCHING PROVISIONED PROFILE ---
+{
+  userId: 88776655,
+  username: 'tinitri_user',
+  status: 'ACTIVE',
+  authMethod: 'TELEGRAM_MINI_APP',
+  referralCode: 'REF-6655-VIVV',
+  createdAt: '2026-08-06T15:06:45.757Z',
+  metrics: { totalReferrals: 0, lifetimeEarnings: 0 }
+}
+
+===============================================================
+🏁 PROFILE & REFERRAL IDENTITY EVIDENCE GENERATED SUCCESSFULLY.
+===============================================================
