@@ -1,24 +1,19 @@
 ===============================================================
-🚀 STARTING SPRINT 13: BETA ONBOARDING & FEATURE FLAG TEST
+🚀 STARTING SPRINT 13: BETA ANALYTICS & A/B ROLLOUT TEST
 ===============================================================
 
---- SCENARIO 1: VALID BETA INVITE ---
+--- SCENARIO 1: BETA ONBOARDING & ANALYTICS TRIGGER ---
 
-[BETA ENGINE] 📥 Registration attempt for ID: 88776655 with code: TINITRI-BETA-01
-   ✅ Beta Invite Validated! Welcome to the Financial OS.
+[BETA ENGINE] 📥 Registration attempt for User: 88776655
    ➡️ [EVENT BUS] Broadcasted: BETA_USER_ONBOARDED
+   📈 [BETA ANALYTICS] Metric: USER_JOINED | User: 88776655
+   ✅ Beta Invite Validated! Welcome to the Financial OS.
 
---- SCENARIO 2: REUSED/INVALID BETA INVITE ---
-
-[BETA ENGINE] 📥 Registration attempt for ID: 99999999 with code: TINITRI-BETA-01
-   ➡️ [EVENT BUS] Broadcasted: UNAUTHORIZED_BETA_ATTEMPT
-
---- SCENARIO 3: FEATURE FLAG CHECK (ENABLED) ---
-   ✅ Lootably module is accessible.
-
---- SCENARIO 4: FEATURE FLAG CHECK (DISABLED) ---
-   ⛔ [FEATURE FLAG] Access blocked for 'isWithdrawalEnabled'. Feature is currently disabled.
+--- SCENARIO 2: A/B TESTING FEATURE ROLLOUT (20% ACCESS) ---
+Checking access for User 5...
+Checking access for User 2...
+   ✅ User 2 has access to newWithdrawalUI (falls within 20% rollout).
 
 ===============================================================
-🏁 BETA OPERATIONS EVIDENCE GENERATED SUCCESSFULLY.
+🏁 BETA ENHANCEMENT EVIDENCE GENERATED SUCCESSFULLY.
 ===============================================================

@@ -1,41 +1,54 @@
-// 🧪 SPRINT 13: CLOSED BETA & FEATURE FLAG EVIDENCE (ADR 020)
+// 🧪 SPRINT 13: FEATURE ROLLOUT & BETA ANALYTICS EVIDENCE (ADR 021)
 
 const BetaOperationsEngine = require('../../../src/services/beta/BetaOperationsEngine');
 
 console.log("===============================================================");
-console.log("🚀 STARTING SPRINT 13: BETA ONBOARDING & FEATURE FLAG TEST");
+console.log("🚀 STARTING SPRINT 13: BETA ANALYTICS & A/B ROLLOUT TEST");
 console.log("===============================================================\n");
 
-const mockEventBus = { emit: (event, data) => console.log(`   ➡️ [EVENT BUS] Broadcasted: ${event}`) };
+const mockEventBus = { 
+    emit: (event, data) => {
+        if (event === 'BETA_ANALYTICS_EVENT') {
+            console.log(`   📈 [BETA ANALYTICS] Metric: ${data.metric} | User: ${data.userId}`);
+        } else {
+            console.log(`   ➡️ [EVENT BUS] Broadcasted: ${event}`);
+        }
+    }
+};
 
-async function runBetaTest() {
-    const betaEngine = new BetaOperationsEngine(mockEventBus, {});
+async function runBetaUpdateTest() {
+    const betaEngine = new BetaOperationsEngine(mockEventBus);
 
     try {
-        console.log("--- SCENARIO 1: VALID BETA INVITE ---");
+        console.log("--- SCENARIO 1: BETA ONBOARDING & ANALYTICS TRIGGER ---");
         betaEngine.processBetaRegistration(88776655, 'TINITRI-BETA-01');
 
-        console.log("\n--- SCENARIO 2: REUSED/INVALID BETA INVITE ---");
-        // Trying to use the same code again (it was deleted in Scenario 1) or a fake code
-        betaEngine.processBetaRegistration(99999999, 'TINITRI-BETA-01');
-    } catch (error) {
-        console.error(`   ⛔ [BLOCKED] ${error.message}`);
-    }
+        console.log("\n--- SCENARIO 2: A/B TESTING FEATURE ROLLOUT (20% ACCESS) ---");
+        
+        // User 5: (5 * 7) % 100 = 35. (35 >= 20 -> BLOCKED)
+        try {
+            console.log("Checking access for User 5...");
+            betaEngine.checkFeatureAccess('newWithdrawalUI', 5);
+        } catch (e) {
+            console.error(`   ⛔ User 5 [BLOCKED]: ${e.message}`);
+        }
 
-    try {
-        console.log("\n--- SCENARIO 3: FEATURE FLAG CHECK (ENABLED) ---");
-        betaEngine.checkFeatureAccess('isLootablyEnabled');
-        console.log("   ✅ Lootably module is accessible.");
+        // User 2: (2 * 7) % 100 = 14. (14 < 20 -> ALLOWED)
+        try {
+            console.log("Checking access for User 2...");
+            betaEngine.checkFeatureAccess('newWithdrawalUI', 2);
+            console.log("   ✅ User 2 has access to newWithdrawalUI (falls within 20% rollout).");
+        } catch (e) {
+            console.error(e.message);
+        }
 
-        console.log("\n--- SCENARIO 4: FEATURE FLAG CHECK (DISABLED) ---");
-        betaEngine.checkFeatureAccess('isWithdrawalEnabled'); // This is false by default
     } catch (error) {
         console.error(`   ⛔ [BLOCKED] ${error.message}`);
     }
 
     console.log("\n===============================================================");
-    console.log("🏁 BETA OPERATIONS EVIDENCE GENERATED SUCCESSFULLY.");
+    console.log("🏁 BETA ENHANCEMENT EVIDENCE GENERATED SUCCESSFULLY.");
     console.log("===============================================================");
 }
 
-runBetaTest();
+runBetaUpdateTest();
