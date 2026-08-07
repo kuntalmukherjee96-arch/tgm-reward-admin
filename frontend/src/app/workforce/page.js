@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 export default function WorkforceCommandCenter() {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [timeFilter, setTimeFilter] = useState('Today'); // Time filtering
 
   useEffect(() => {
     fetch('/api/workforce')
@@ -35,64 +36,76 @@ export default function WorkforceCommandCenter() {
         {/* Header & Lineage Evidence */}
         <div className="flex justify-between items-end mb-8 border-b border-slate-700/50 pb-4">
           <div>
-            <h1 className="text-3xl font-bold text-white mb-2">Workforce Operations Intelligence</h1>
+            <h1 className="text-3xl font-bold text-white mb-2">Workforce Command Center</h1>
             <div className="flex space-x-3 text-xs font-mono">
-              <span className="px-2 py-1 bg-slate-800 rounded border border-slate-700 text-emerald-400">
-                Evt Schema: {data.metadata.lineage.eventSchemaVersion}
-              </span>
-              <span className="px-2 py-1 bg-slate-800 rounded border border-slate-700 text-blue-400">
-                Calc Version: {data.metadata.lineage.calculationVersion}
-              </span>
-              <span className="px-2 py-1 bg-slate-800 rounded border border-slate-700 text-purple-400">
-                Cfg Snapshot: {data.metadata.lineage.configSnapshotId}
-              </span>
+              <span className="px-2 py-1 bg-slate-800 rounded border border-slate-700 text-emerald-400">Schema: {data.metadata.lineage.eventSchemaVersion}</span>
+              <span className="px-2 py-1 bg-slate-800 rounded border border-slate-700 text-blue-400">Calc: {data.metadata.lineage.calculationVersion}</span>
+              <span className="px-2 py-1 bg-slate-800 rounded border border-slate-700 text-purple-400">Config: {data.metadata.lineage.configSnapshotId}</span>
             </div>
           </div>
           <div className="text-right">
-            <div className="text-sm font-medium text-slate-400">Global RBAC Scope Active</div>
+            <select 
+              value={timeFilter} 
+              onChange={(e) => setTimeFilter(e.target.value)}
+              className="mb-2 bg-slate-800 border border-slate-700 text-sm rounded-lg px-3 py-1 outline-none text-white"
+            >
+              <option>Today</option>
+              <option>Last 7 Days</option>
+              <option>Last 30 Days</option>
+            </select>
             <div className="text-xs text-slate-500 mt-1">Data Lag: {data.metadata.freshness.lagSeconds}s (Server Auth)</div>
           </div>
         </div>
 
-        {/* Global Presence Overview */}
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-8">
-          <div className="bg-[#1e293b] p-4 rounded-xl border border-slate-700">
-            <div className="text-xs text-slate-400 mb-1">Total Agents</div>
-            <div className="text-2xl font-bold text-white">{data.globalHealth.totalAgents}</div>
+        {/* POINT 4: Duty Roster & Routine Board */}
+        <div className="bg-[#1e293b] border border-slate-700/50 rounded-xl p-6 mb-8">
+          <div className="flex justify-between items-center mb-4">
+            <h2 className="text-lg font-bold text-white">Support Duty Roster / Routine Board</h2>
+            <button className="px-3 py-1 bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold rounded-lg transition-all">
+              + Assign Shift
+            </button>
           </div>
-          <div className="bg-blue-500/10 p-4 rounded-xl border border-blue-500/30">
-            <div className="text-xs text-blue-400 mb-1">Online (Valid Session)</div>
-            <div className="text-2xl font-bold text-blue-400">{data.globalHealth.presence.online}</div>
-          </div>
-          <div className="bg-emerald-500/10 p-4 rounded-xl border border-emerald-500/30">
-            <div className="text-xs text-emerald-400 mb-1">Active Working</div>
-            <div className="text-2xl font-bold text-emerald-400">{data.globalHealth.presence.activeWorking}</div>
-          </div>
-          <div className="bg-amber-500/10 p-4 rounded-xl border border-amber-500/30">
-            <div className="text-xs text-amber-400 mb-1">Idle State</div>
-            <div className="text-2xl font-bold text-amber-400">{data.globalHealth.presence.idle}</div>
-          </div>
-          <div className="bg-slate-800 p-4 rounded-xl border border-slate-600">
-            <div className="text-xs text-slate-400 mb-1">Away State</div>
-            <div className="text-2xl font-bold text-slate-300">{data.globalHealth.presence.away}</div>
-          </div>
-        </div>
-
-        {/* Agent Performance Table */}
-        <div className="bg-[#1e293b] border border-slate-700/50 rounded-xl p-6">
-          <h2 className="text-lg font-bold text-white mb-4 flex items-center justify-between">
-            <span>Agent Operational Telemetry</span>
-            <span className="text-xs px-3 py-1 bg-slate-800 rounded-full text-slate-400 font-mono">Deduplicated Monotonic Time</span>
-          </h2>
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="border-b border-slate-700/50 text-slate-400 text-xs uppercase">
                 <th className="pb-3 font-medium">Agent</th>
-                <th className="pb-3 font-medium">State</th>
+                <th className="pb-3 font-medium">Shift</th>
+                <th className="pb-3 font-medium">Scheduled</th>
+                <th className="pb-3 font-medium">Actual</th>
+                <th className="pb-3 font-medium">Variance</th>
+              </tr>
+            </thead>
+            <tbody className="text-sm">
+              {data.dutyRoster.map((roster, idx) => (
+                <tr key={idx} className="border-b border-slate-700/10 hover:bg-slate-800/50 transition-colors">
+                  <td className="py-3 font-bold text-white">{roster.agent}</td>
+                  <td className="py-3 text-slate-300">{roster.shift}</td>
+                  <td className="py-3 font-mono text-slate-400">{roster.scheduled}</td>
+                  <td className="py-3 font-mono text-blue-400">{roster.actual}</td>
+                  <td className="py-3 font-mono">
+                    <span className={`px-2 py-0.5 rounded ${roster.variance.startsWith('+') ? 'bg-emerald-500/10 text-emerald-400' : roster.variance.startsWith('-') ? 'bg-red-500/10 text-red-400' : 'text-slate-500'}`}>
+                      {roster.variance}
+                    </span>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+
+        {/* POINT 5 & 6: Agent Comparison & Trend Analytics */}
+        <div className="bg-[#1e293b] border border-slate-700/50 rounded-xl p-6">
+          <h2 className="text-lg font-bold text-white mb-4">Agent Performance & Chat Operations</h2>
+          <table className="w-full text-left border-collapse whitespace-nowrap">
+            <thead>
+              <tr className="border-b border-slate-700/50 text-slate-400 text-xs uppercase">
+                <th className="pb-3 font-medium">Agent</th>
+                <th className="pb-3 font-medium">Trend</th>
                 <th className="pb-3 font-medium">Active Work</th>
-                <th className="pb-3 font-medium">Idle/Away</th>
-                <th className="pb-3 font-medium">Chats Handled</th>
-                <th className="pb-3 font-medium text-right">SLA Breaches</th>
+                <th className="pb-3 font-medium">Chats</th>
+                <th className="pb-3 font-medium">Avg Resp</th>
+                <th className="pb-3 font-medium">SLA %</th>
+                <th className="pb-3 font-medium text-right">Breaches</th>
               </tr>
             </thead>
             <tbody className="text-sm">
@@ -103,17 +116,14 @@ export default function WorkforceCommandCenter() {
                     <div className="text-xs font-mono text-slate-500">{agent.agentId}</div>
                   </td>
                   <td className="py-4">
-                    <span className={`px-2 py-1 text-xs rounded-full font-medium ${agent.status === 'ACTIVE' ? 'bg-emerald-500/10 text-emerald-400' : 'bg-amber-500/10 text-amber-400'}`}>
-                      {agent.status}
-                    </span>
+                    {agent.trend === 'UP' ? <span className="text-emerald-400 font-bold">↑</span> : 
+                     agent.trend === 'DOWN' ? <span className="text-red-400 font-bold">↓</span> : 
+                     <span className="text-slate-400 font-bold">→</span>}
                   </td>
-                  <td className="py-4 font-mono text-emerald-400">
-                    {formatTime(agent.metrics.activeWorkingSec)}
-                  </td>
-                  <td className="py-4 font-mono text-slate-400">
-                    {formatTime(agent.metrics.idleSec + agent.metrics.awaySec)}
-                  </td>
+                  <td className="py-4 font-mono text-emerald-400">{formatTime(agent.metrics.activeWorkingSec)}</td>
                   <td className="py-4 font-medium text-blue-400">{agent.metrics.chatsHandled}</td>
+                  <td className="py-4 font-mono text-slate-300">{agent.metrics.avgResponseTime}</td>
+                  <td className="py-4 font-medium text-emerald-400">{agent.metrics.slaCompliance}</td>
                   <td className="py-4 text-right">
                     <span className={`font-bold ${agent.metrics.slaBreachCount > 0 ? 'text-red-400' : 'text-slate-500'}`}>
                       {agent.metrics.slaBreachCount}
