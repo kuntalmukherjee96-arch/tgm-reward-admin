@@ -1,101 +1,127 @@
 "use client";
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 
 export default function SupportWorkspace() {
-  const [demoLoaded, setDemoLoaded] = useState(false);
-  const [loading, setLoading] = useState(false);
+  const [data, setData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [selectedChat, setSelectedChat] = useState(null);
+  const [replyText, setReplyText] = useState("");
 
-  const triggerDemoMode = () => {
-    setLoading(true);
-    fetch('/api/demo', { method: 'POST' })
+  useEffect(() => {
+    fetch('/api/notifications')
       .then(res => res.json())
-      .then(data => {
-        setDemoLoaded(true);
+      .then(fetchedData => {
+        setData(fetchedData);
         setLoading(false);
+        if (fetchedData.activeChats.length > 0) {
+          setSelectedChat(fetchedData.activeChats[0]);
+        }
       });
-  };
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-[#0f172a] flex items-center justify-center text-white">
+        <div className="animate-spin h-10 w-10 border-4 border-purple-500 border-t-transparent rounded-full"></div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-[#0f172a] text-slate-300 font-sans p-6">
       <div className="max-w-7xl mx-auto">
-        {/* Header & Demo Dataset Button */}
+        {/* Header with Notification Badge */}
         <div className="flex justify-between items-center mb-8 border-b border-slate-700/50 pb-4">
           <div>
-            <h1 className="text-3xl font-bold text-white">Support Workspace & Kanban</h1>
-            <p className="text-slate-400 text-sm">Managing conversations, SLA timelines, and secure internal notes.</p>
+            <h1 className="text-3xl font-bold text-white">Support Command & Live Chat</h1>
+            <p className="text-slate-400 text-sm">Real-time telemetry, notifications, and direct user conversations.</p>
           </div>
-          <button 
-            onClick={triggerDemoMode}
-            className="px-4 py-2 bg-purple-600 hover:bg-purple-500 text-white rounded-lg font-medium transition-all shadow-[0_0_15px_rgba(147,51,234,0.3)] flex items-center space-x-2"
-          >
-            <span>⚡ Load Demo Dataset Mode</span>
-          </button>
+          <div className="flex items-center space-x-3">
+            <div className="px-4 py-2 bg-red-500/10 border border-red-500/30 text-red-400 rounded-lg text-sm font-medium flex items-center space-x-2">
+              <span className="h-2 w-2 bg-red-500 rounded-full animate-ping"></span>
+              <span>🔔 Notifications ({data.unreadCount} Unread)</span>
+            </div>
+          </div>
         </div>
 
-        {demoLoaded && (
-          <div className="mb-6 p-4 bg-purple-500/10 border border-purple-500/30 rounded-xl text-purple-300 text-sm flex items-center justify-between">
-            <span>✨ Demo Mode Active: 50 Users, 200 Transactions, 25 Withdrawals, 10 Tickets, 5 Incidents loaded successfully!</span>
-            <span className="font-mono text-xs bg-purple-500/20 px-2 py-1 rounded">SECURE_SANDBOX</span>
-          </div>
-        )}
+        {/* Notifications Alert Banner */}
+        <div className="mb-8 grid grid-cols-1 md:grid-cols-3 gap-4">
+          {data.notifications.map((notif, idx) => (
+            <div key={idx} className={`p-4 rounded-xl border ${notif.severity === 'danger' ? 'bg-red-500/10 border-red-500/30 text-red-300' : notif.severity === 'warning' ? 'bg-amber-500/10 border-amber-500/30 text-amber-300' : 'bg-blue-500/10 border-blue-500/30 text-blue-300'}`}>
+              <div className="text-xs font-mono opacity-75 mb-1">{notif.timestamp}</div>
+              <div className="text-sm font-semibold">{notif.message}</div>
+            </div>
+          ))}
+        </div>
 
-        {/* Kanban / Ticket SLA Grid */}
+        {/* Live Chat Support Workspace */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          
-          {/* Column 1: Open / New */}
+          {/* Left: Chat List */}
           <div className="bg-[#1e293b] border border-slate-700/50 rounded-xl p-5">
-            <div className="flex justify-between items-center mb-4">
-              <h3 className="font-bold text-white">Open Tickets</h3>
-              <span className="px-2 py-0.5 bg-red-500/10 text-red-400 text-xs rounded-full font-medium">🔴 BREACHED SLA</span>
-            </div>
+            <h3 className="font-bold text-white mb-4">Active User Conversations</h3>
             <div className="space-y-3">
-              <div className="bg-slate-800/80 p-4 rounded-lg border-l-4 border-red-500">
-                <div className="text-xs font-mono text-slate-400">TKT_901 • USR_12</div>
-                <div className="text-sm font-bold text-white mt-1">Payout delay on UPI</div>
-                <div className="mt-3 flex justify-between items-center text-xs text-slate-400">
-                  <span>Timeline: Created</span>
-                  <span className="text-red-400 font-semibold">SLA Breached</span>
+              {data.activeChats.map((chat, idx) => (
+                <div 
+                  key={idx} 
+                  onClick={() => setSelectedChat(chat)}
+                  className={`p-3 rounded-lg border cursor-pointer transition-all ${selectedChat?.ticketId === chat.ticketId ? 'bg-blue-600/20 border-blue-500 text-white' : 'bg-slate-800/60 border-slate-700 text-slate-300 hover:bg-slate-800'}`}
+                >
+                  <div className="flex justify-between items-center text-xs font-mono text-slate-400 mb-1">
+                    <span>{chat.ticketId}</span>
+                    <span>{chat.time}</span>
+                  </div>
+                  <div className="text-sm font-bold text-white">{chat.user}</div>
+                  <div className="text-xs text-slate-400 truncate mt-1">{chat.lastMessage}</div>
                 </div>
-              </div>
+              ))}
             </div>
           </div>
 
-          {/* Column 2: In Progress */}
-          <div className="bg-[#1e293b] border border-slate-700/50 rounded-xl p-5">
-            <div className="flex justify-between items-center mb-4">
-              <h3 className="font-bold text-white">In Progress</h3>
-              <span className="px-2 py-0.5 bg-amber-500/10 text-amber-400 text-xs rounded-full font-medium">🟡 WARNING SLA</span>
-            </div>
-            <div className="space-y-3">
-              <div className="bg-slate-800/80 p-4 rounded-lg border-l-4 border-amber-500">
-                <div className="text-xs font-mono text-slate-400">TKT_902 • USR_49</div>
-                <div className="text-sm font-bold text-white mt-1">Invite code limit reached</div>
-                <div className="mt-3 flex justify-between items-center text-xs text-slate-400">
-                  <span>Timeline: Assigned</span>
-                  <span className="text-amber-400 font-semibold">2h remaining</span>
+          {/* Right: Active Chat Window */}
+          <div className="lg:col-span-2 bg-[#1e293b] border border-slate-700/50 rounded-xl p-5 flex flex-col justify-between h-[450px]">
+            {selectedChat ? (
+              <>
+                <div className="border-b border-slate-700/50 pb-3 mb-4 flex justify-between items-center">
+                  <div>
+                    <h3 className="font-bold text-white">Chat Session: {selectedChat.ticketId}</h3>
+                    <p className="text-xs text-slate-400">Connected with user: {selectedChat.user} via Telegram Mini App</p>
+                  </div>
+                  <span className="px-2.5 py-1 bg-emerald-500/10 text-emerald-400 text-xs rounded-full font-medium">LIVE SECURE</span>
                 </div>
-              </div>
-            </div>
-          </div>
 
-          {/* Column 3: Closed / Resolved */}
-          <div className="bg-[#1e293b] border border-slate-700/50 rounded-xl p-5">
-            <div className="flex justify-between items-center mb-4">
-              <h3 className="font-bold text-white">Resolved</h3>
-              <span className="px-2 py-0.5 bg-emerald-500/10 text-emerald-400 text-xs rounded-full font-medium">🟢 HEALTHY SLA</span>
-            </div>
-            <div className="space-y-3">
-              <div className="bg-slate-800/80 p-4 rounded-lg border-l-4 border-emerald-500">
-                <div className="text-xs font-mono text-slate-400">TKT_903 • USR_22</div>
-                <div className="text-sm font-bold text-white mt-1">KYC verification status</div>
-                <div className="mt-3 flex justify-between items-center text-xs text-slate-400">
-                  <span>Timeline: Closed</span>
-                  <span className="text-emerald-400 font-semibold">On Time</span>
+                <div className="flex-1 overflow-y-auto space-y-3 pr-2 mb-4">
+                  <div className="bg-slate-800 p-3 rounded-lg max-w-md text-sm">
+                    <span className="text-xs text-blue-400 font-semibold block mb-1">{selectedChat.user}</span>
+                    {selectedChat.lastMessage}
+                  </div>
+                  <div className="bg-blue-600/20 border border-blue-500/30 p-3 rounded-lg max-w-md ml-auto text-sm text-right">
+                    <span className="text-xs text-emerald-400 font-semibold block mb-1">Support Agent (You)</span>
+                    Hello! We are reviewing your transaction through the secure ledger and it will be settled shortly.
+                  </div>
                 </div>
-              </div>
-            </div>
-          </div>
 
+                <div className="flex gap-2">
+                  <input 
+                    type="text" 
+                    value={replyText}
+                    onChange={(e) => setReplyText(e.target.value)}
+                    placeholder="Type secure response to user..."
+                    className="flex-1 bg-slate-800 border border-slate-700 rounded-lg px-4 py-2 text-sm text-white focus:outline-none focus:border-blue-500"
+                  />
+                  <button 
+                    onClick={() => setReplyText("")}
+                    className="px-5 py-2 bg-blue-600 hover:bg-blue-500 text-white text-sm font-semibold rounded-lg transition-all"
+                  >
+                    Send
+                  </button>
+                </div>
+              </>
+            ) : (
+              <div className="flex items-center justify-center h-full text-slate-500 text-sm">
+                Select a conversation to begin live chat support.
+              </div>
+            )}
+          </div>
         </div>
 
       </div>
