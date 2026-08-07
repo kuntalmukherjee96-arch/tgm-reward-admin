@@ -1,0 +1,34 @@
+===============================================================
+💰 STARTING SPRINT 15: TREASURY SETTLEMENT TEST
+===============================================================
+
+--- SCENARIO 1: VALID WITHDRAWAL REQUEST ---
+
+[TREASURY] 💸 New Withdrawal Request: User [USR_LEGIT] | Amount: 1000
+   ✅ Balance Verified. Moved to PENDING_REVIEW queue. ID: WDL_1786094439733_USR_LEGIT
+   📡 [EVENT BUS] WITHDRAWAL_QUEUED -> Data: {"withdrawalId":"WDL_1786094439733_USR_LEGIT","userId":"USR_LEGIT","amount":1000,"method":"UPI","status":"PENDING_REVIEW"}
+
+--- SCENARIO 2: UNAUTHORIZED ADMIN TRIES TO APPROVE ---
+
+[TREASURY] 🏦 Payout Approval Attempt for [WDL_1786094439733_USR_LEGIT] by Role: [SUPPORT_ADMIN]
+   📡 [EVENT BUS] SECURITY_ALERT -> Data: {"reason":"Unauthorized Payout Approval","adminRole":"SUPPORT_ADMIN","withdrawalId":"WDL_1786094439733_USR_LEGIT"}
+
+--- SCENARIO 3: FINANCE ADMIN APPROVES PAYOUT ---
+
+[TREASURY] 🏦 Payout Approval Attempt for [WDL_1786094439733_USR_LEGIT] by Role: [FINANCE_ADMIN]
+   ✅ Payout Approved successfully. Funds released to Payment Gateway.
+   📡 [EVENT BUS] PAYOUT_SETTLED -> Data: {"withdrawalId":"WDL_1786094439733_USR_LEGIT","adminRole":"FINANCE_ADMIN","timestamp":"2026-08-07T09:20:39.741Z"}
+
+--- SCENARIO 4: FINANCE ADMIN ACCIDENTALLY DOUBLE CLICKS (IDEMPOTENCY) ---
+
+[TREASURY] 🏦 Payout Approval Attempt for [WDL_1786094439733_USR_LEGIT] by Role: [FINANCE_ADMIN]
+   📡 [EVENT BUS] AUDIT_LOG -> Data: {"event":"DOUBLE_PAYOUT_BLOCKED","withdrawalId":"WDL_1786094439733_USR_LEGIT"}
+
+--- SCENARIO 5: USER TRIES TO WITHDRAW MORE THAN BALANCE ---
+
+[TREASURY] 💸 New Withdrawal Request: User [USR_HACKER] | Amount: 5000
+   📡 [EVENT BUS] SECURITY_ALERT -> Data: {"reason":"Insufficient Funds Attempt","userId":"USR_HACKER","requested":5000,"actual":100}
+
+===============================================================
+🏁 TREASURY SETTLEMENT EVIDENCE GENERATED SUCCESSFULLY.
+===============================================================
