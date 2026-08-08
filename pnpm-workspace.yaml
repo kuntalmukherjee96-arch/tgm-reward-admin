@@ -6,5 +6,4 @@ allowBuilds:
   bcrypt: false
   esbuild: false
   sharp: false
-  unrs-resolver: set this to true or false
   workerd: false
